@@ -67,6 +67,7 @@ const (
 func (sched *Scheduler) ScheduleOne(ctx context.Context) {
 	logger := klog.FromContext(ctx)
 	podInfo, err := sched.NextPod(logger)
+	klog.InfoS("ABHISHEK : 🚀 Scheduling cycle started")
 	if err != nil {
 		utilruntime.HandleErrorWithLogger(logger, err, "Error while retrieving next pod from scheduling queue")
 		return
@@ -99,6 +100,7 @@ func (sched *Scheduler) ScheduleOne(ctx context.Context) {
 func (sched *Scheduler) scheduleOnePod(ctx context.Context, podInfo *framework.QueuedPodInfo) {
 	logger := klog.FromContext(ctx)
 	pod := podInfo.Pod
+	klog.InfoS("📦 Scheduling pod", "pod", klog.KObj(pod))
 	// TODO(knelasevero): Remove duplicated keys from log entry calls
 	// When contextualized logging hits GA
 	// https://github.com/kubernetes/kubernetes/issues/111672
@@ -265,7 +267,6 @@ func (sched *Scheduler) schedulingAlgorithm(
 	}()
 
 	pod := podInfo.Pod
-
 	logger := klog.FromContext(ctx)
 	scheduleResult, err := sched.SchedulePod(ctx, schedFramework, state, podInfo)
 	if err != nil {
@@ -479,6 +480,8 @@ func (sched *Scheduler) bindingCycle(
 
 	// Calculating nodeResourceString can be heavy. Avoid it if klog verbosity is below 2.
 	logger.V(2).Info("Successfully bound pod to node", "pod", klog.KObj(assumedPod), "node", scheduleResult.SuggestedHost, "evaluatedNodes", scheduleResult.EvaluatedNodes, "feasibleNodes", scheduleResult.FeasibleNodes)
+
+	klog.InfoS("✅ Pod scheduled", "pod", klog.KObj(assumedPod), "node", scheduleResult.SuggestedHost)
 	metrics.PodScheduled(schedFramework.ProfileName(), metrics.SinceInSeconds(start))
 	metrics.PodSchedulingAttempts.Observe(float64(assumedPodInfo.Attempts))
 	if assumedPodInfo.InitialAttemptTimestamp != nil {
